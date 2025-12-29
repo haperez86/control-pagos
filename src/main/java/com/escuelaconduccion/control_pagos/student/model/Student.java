@@ -33,4 +33,9 @@ public class Student {
 
     @Column(nullable = false)
     private Boolean active = true;
+
+    @Transient
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 }
