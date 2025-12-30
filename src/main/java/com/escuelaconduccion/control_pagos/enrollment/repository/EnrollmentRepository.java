@@ -1,6 +1,7 @@
 package com.escuelaconduccion.control_pagos.enrollment.repository;
 
 import com.escuelaconduccion.control_pagos.admin.dto.CourseFinancialSummaryDTO;
+import com.escuelaconduccion.control_pagos.admin.dto.DashboardDTO;
 import com.escuelaconduccion.control_pagos.enrollment.model.Enrollment;
 import com.escuelaconduccion.control_pagos.admin.dto.StudentDebtDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -41,4 +42,17 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
         GROUP BY c.id, c.name, c.active
         """)
             CourseFinancialSummaryDTO getCourseFinancialSummary(@Param("courseId") Long courseId);
+
+    @Query("""
+    SELECT new com.escuelaconduccion.control_pagos.admin.dto.DashboardDTO(
+        (SELECT COUNT(s) FROM Student s WHERE s.active = true),
+        COUNT(e),
+        COALESCE(SUM(e.totalAmount), 0),
+        COALESCE(SUM(e.paidAmount), 0),
+        COALESCE(SUM(e.totalAmount - e.paidAmount), 0)
+    )
+    FROM Enrollment e
+    WHERE e.active = true
+    """)
+    DashboardDTO getDashboardData();
 }
