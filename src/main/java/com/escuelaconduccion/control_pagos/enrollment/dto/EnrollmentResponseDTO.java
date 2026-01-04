@@ -19,4 +19,8 @@ public class EnrollmentResponseDTO {
     private BigDecimal totalAmount;
     private BigDecimal paidAmount;
     private Boolean active;
+    private String studentName; 
+    private String studentDocument;
+    private String studentEmail;
+    private String courseName;
 }

@@ -40,10 +40,10 @@ public class CourseController {
         return courseService.updateCourse(id, request);
     }
 
-    @PatchMapping("/{id}/deactivate")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deactivateCourse(@PathVariable Long id) {
-        courseService.deactivateCourse(id);
+    @PatchMapping("/{id}/toggle-status")
+        @ResponseStatus(HttpStatus.NO_CONTENT)
+        public void toggleCourseStatus(@PathVariable Long id) {
+            courseService.toggleCourseStatus(id);
     }
 }
 

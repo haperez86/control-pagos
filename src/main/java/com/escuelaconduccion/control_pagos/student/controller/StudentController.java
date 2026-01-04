@@ -40,9 +40,9 @@ public class StudentController {
         return studentService.updateStudent(id, request);
     }
 
-    @PatchMapping("/{id}/deactivate")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deactivateStudent(@PathVariable Long id) {
-        studentService.deactivateStudent(id);
+    @PatchMapping("/{id}/toggle-status")
+        @ResponseStatus(HttpStatus.NO_CONTENT)
+        public void toggleStudentStatus(@PathVariable Long id) {
+            studentService.toggleStudentStatus(id);
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class EnrollmentService {
@@ -31,7 +32,7 @@ public class EnrollmentService {
     }
 
     @Transactional
-    public EnrollmentResponseDTO createEnrollment(EnrollmentRequestDTO request) {
+        public EnrollmentResponseDTO createEnrollment(EnrollmentRequestDTO request) {
 
         Student student = studentRepository.findById(request.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado"));
@@ -43,8 +44,8 @@ public class EnrollmentService {
                 .student(student)
                 .course(course)
                 .enrollmentDate(LocalDate.now())
-                .totalAmount(request.getTotalAmount())
-                .paidAmount(request.getTotalAmount().ZERO)
+                .totalAmount(course.getPrice()) // AUTOMÁTICO desde el curso
+                .paidAmount(BigDecimal.ZERO)
                 .active(true)
                 .build();
 
@@ -53,30 +54,40 @@ public class EnrollmentService {
         return EnrollmentResponseDTO.builder()
                 .id(saved.getId())
                 .studentId(student.getId())
+                .studentName(student.getFirstName() + " " + student.getLastName())
+                .studentDocument(student.getDocumentNumber())
+                .studentEmail(student.getEmail())
                 .courseId(course.getId())
+                .courseName(course.getName())
                 .enrollmentDate(saved.getEnrollmentDate())
                 .totalAmount(saved.getTotalAmount())
                 .paidAmount(saved.getPaidAmount())
                 .active(saved.getActive())
                 .build();
-    }
+        }
 
-    @Transactional
-    public EnrollmentResponseDTO getEnrollmentById(Long id) {
-
+        @Transactional
+        public EnrollmentResponseDTO getEnrollmentById(Long id) {
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Matrícula no encontrada"));
+        
+        Student student = enrollment.getStudent();
+        Course course = enrollment.getCourse();
 
         return EnrollmentResponseDTO.builder()
                 .id(enrollment.getId())
-                .studentId(enrollment.getStudent().getId())
-                .courseId(enrollment.getCourse().getId())
+                .studentId(student.getId())
+                .studentName(student.getFirstName() + " " + student.getLastName())
+                .studentDocument(student.getDocumentNumber())
+                .studentEmail(student.getEmail())
+                .courseId(course.getId())
+                .courseName(course.getName())
                 .enrollmentDate(enrollment.getEnrollmentDate())
                 .totalAmount(enrollment.getTotalAmount())
                 .paidAmount(enrollment.getPaidAmount())
                 .active(enrollment.getActive())
                 .build();
-    }
+        }
 
     @Transactional
     public EnrollmentSummaryDTO getEnrollmentSummary(Long enrollmentId) {
@@ -104,6 +115,30 @@ public class EnrollmentService {
                 .status(status)
                 .build();
     }
+
+        @Transactional
+        public List<EnrollmentResponseDTO> getAllEnrollments() {
+        return enrollmentRepository.findAll().stream()
+                .map(enrollment -> {
+                        Student student = enrollment.getStudent();
+                        Course course = enrollment.getCourse();
+                        
+                        return EnrollmentResponseDTO.builder()
+                                .id(enrollment.getId())
+                                .studentId(student.getId())
+                                .studentName(student.getFirstName() + " " + student.getLastName())
+                                .studentDocument(student.getDocumentNumber())
+                                .studentEmail(student.getEmail())
+                                .courseId(course.getId())
+                                .courseName(course.getName())
+                                .enrollmentDate(enrollment.getEnrollmentDate())
+                                .totalAmount(enrollment.getTotalAmount())
+                                .paidAmount(enrollment.getPaidAmount())
+                                .active(enrollment.getActive())
+                                .build();
+                })
+                .toList();
+        }
 
 }
 

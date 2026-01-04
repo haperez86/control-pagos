@@ -43,14 +43,15 @@ public class CourseService {
                 .map(c -> new CourseListDTO(
                         c.getId(),
                         c.getName(),
+                        c.getDescription(),
                         c.getPrice(),
+                        c.getTotalHours(),
                         c.getActive()
                 ))
                 .toList();
     }
 
     public List<CourseListDTO> getCourses(Boolean active, String name) {
-
         List<Course> courses;
 
         if (name != null) {
@@ -65,7 +66,9 @@ public class CourseService {
                 .map(c -> new CourseListDTO(
                         c.getId(),
                         c.getName(),
+                        c.getDescription(),
                         c.getPrice(),
+                        c.getTotalHours(),
                         c.getActive()
                 ))
                 .toList();
@@ -76,7 +79,9 @@ public class CourseService {
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
         course.setName(request.getName());
+        course.setDescription(request.getDescription());  // AGREGA ESTO
         course.setPrice(request.getPrice());
+        course.setTotalHours(request.getTotalHours());    // AGREGA ESTO
         course.setActive(request.getActive() != null ? request.getActive() : course.getActive());
 
         courseRepository.save(course);
@@ -95,6 +100,13 @@ public class CourseService {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
         course.setActive(false);
+        courseRepository.save(course);
+    }
+
+    public void toggleCourseStatus(Long id) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        course.setActive(!course.getActive()); // Invierte el estado
         courseRepository.save(course);
     }
 }

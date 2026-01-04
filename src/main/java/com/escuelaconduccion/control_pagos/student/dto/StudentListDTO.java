@@ -7,7 +7,10 @@ import lombok.*;
 @NoArgsConstructor
 public class StudentListDTO {
     private Long id;
-    private String document;
-    private String fullName;
+    private String documentNumber;  // Cambiar de 'document' a 'documentNumber'
+    private String firstName;       // Agregar firstName
+    private String lastName;        // Agregar lastName
+    private String email;           // Agregar email (opcional)
+    private String phone;           // Agregar phone (opcional)
     private Boolean active;
 }

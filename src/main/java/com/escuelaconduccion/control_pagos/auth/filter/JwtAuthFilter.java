@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
 
@@ -34,43 +33,51 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String username;
+        // Permitir endpoints públicos
+        if (request.getServletPath().startsWith("/api/auth")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-        // Verificar si existe Authorization header con Bearer token
+        final String authHeader = request.getHeader("Authorization");
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Extraer JWT token
-        jwt = authHeader.substring(7);
-
         try {
-            // Extraer username del token
-            username = jwtService.extractUsername(jwt);
+            final String jwt = authHeader.substring(7);
+            final String username = jwtService.extractUsername(jwt);
 
-            // Si hay username y no hay autenticación previa
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            if (username != null &&
+                SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                // Validar el token
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(username);
+
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = 
+
+                    UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
                                     null,
                                     userDetails.getAuthorities()
                             );
+
                     authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
                     );
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(authToken);
                 }
             }
+
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e.getMessage());
+            Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
+            log.error("JWT error: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);

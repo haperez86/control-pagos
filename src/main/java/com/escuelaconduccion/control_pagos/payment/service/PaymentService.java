@@ -102,16 +102,46 @@ public class PaymentService {
                 .toList();
     }
 
-    @Transactional
-    public void cancelPayment(Long paymentId) {
+         @Transactional
+        public void cancelPayment(Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
 
+        // VALIDACIÓN: Evita anular dos veces
+        if (payment.getStatus() == PaymentStatus.ANULADO) {
+                throw new IllegalStateException("Este pago ya está anulado");
+        }
+
         Enrollment enrollment = payment.getEnrollment();
-        enrollment.setPaidAmount(enrollment.getPaidAmount().subtract(payment.getAmount()));
+        BigDecimal newPaidAmount = enrollment.getPaidAmount().subtract(payment.getAmount());
+        
+        // PROTECCIÓN: Evita valores negativos
+        if (newPaidAmount.compareTo(BigDecimal.ZERO) < 0) {
+                newPaidAmount = BigDecimal.ZERO;
+        }
+        
+        enrollment.setPaidAmount(newPaidAmount);
         enrollmentRepository.save(enrollment);
 
         payment.setStatus(PaymentStatus.ANULADO);
         paymentRepository.save(payment);
-    }
+        }
+
+        @Transactional(readOnly = true)
+        public List<PaymentResponseDTO> getAllPayments() {
+        List<Payment> payments = paymentRepository.findAllWithMethod(); // O usa findAll()
+        
+        return payments.stream()
+                .map(p -> PaymentResponseDTO.builder()
+                        .id(p.getId())
+                        .amount(p.getAmount())
+                        .paymentDate(p.getPaymentDate())
+                        .status(p.getStatus())
+                        .type(p.getType())
+                        .enrollmentId(p.getEnrollment().getId())
+                        .paymentMethodId(p.getPaymentMethod().getId())
+                        .paymentMethodName(p.getPaymentMethod().getName()) // ASEGÚRATE QUE ESTÉ AQUÍ
+                        .build())
+                .toList();
+        }
 }

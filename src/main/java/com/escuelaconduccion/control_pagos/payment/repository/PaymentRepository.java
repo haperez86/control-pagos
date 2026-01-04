@@ -30,4 +30,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     BigDecimal sumConfirmedPaymentsByEnrollment(
             @Param("enrollmentId") Long enrollmentId
     );
+
+    @Query("SELECT p FROM Payment p JOIN FETCH p.paymentMethod JOIN FETCH p.enrollment")
+    List<Payment> findAllWithMethod();
 }

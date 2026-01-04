@@ -9,7 +9,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class CourseListDTO {
     private Long id;
-    private String code;
+    private String name;        // Cambiar 'code' por 'name'
+    private String description; // Agregar
     private BigDecimal price;
+    private Integer totalHours; // Agregar
     private Boolean active;
 }

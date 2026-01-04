@@ -44,46 +44,48 @@ public class StudentService {
         return studentRepository.findAll().stream()
                 .map(s -> new StudentListDTO(
                         s.getId(),
-                        s.getDocumentNumber(),
-                        s.getFirstName() + " " + s.getLastName(),
+                        s.getDocumentNumber(),  // documentNumber
+                        s.getFirstName(),        // firstName
+                        s.getLastName(),         // lastName
+                        s.getEmail(),           // email
+                        s.getPhone(),           // phone
                         s.getActive()
                 ))
                 .toList();
-    }
+        }
 
     public List<StudentListDTO> getStudents(
-            Boolean active,
-            String document,
-            String name
-    ) {
-
+                Boolean active,
+                String document,
+                String name
+        ) {
         List<Student> students;
 
         if (document != null) {
-            students = studentRepository
-                    .findByDocumentNumberContainingIgnoreCase(document);
-
+                students = studentRepository
+                        .findByDocumentNumberContainingIgnoreCase(document);
         } else if (name != null) {
-            students = studentRepository
-                    .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
-                            name, name);
-
+                students = studentRepository
+                        .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                                name, name);
         } else if (active != null) {
-            students = studentRepository.findByActive(active);
-
+                students = studentRepository.findByActive(active);
         } else {
-            students = studentRepository.findAll();
+                students = studentRepository.findAll();
         }
 
         return students.stream()
                 .map(s -> new StudentListDTO(
                         s.getId(),
                         s.getDocumentNumber(),
-                        s.getFirstName() + " " + s.getLastName(),
+                        s.getFirstName(),
+                        s.getLastName(),
+                        s.getEmail(),
+                        s.getPhone(),
                         s.getActive()
                 ))
                 .toList();
-    }
+        }
 
     public StudentResponseDTO updateStudent(Long id, StudentRequestDTO request) {
         Student student = studentRepository.findById(id)
@@ -113,4 +115,11 @@ public class StudentService {
         student.setActive(false);
         studentRepository.save(student);
     }
+
+    public void toggleStudentStatus(Long id) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+        student.setActive(!student.getActive()); // Invierte el estado
+        studentRepository.save(student);
+        }
 }

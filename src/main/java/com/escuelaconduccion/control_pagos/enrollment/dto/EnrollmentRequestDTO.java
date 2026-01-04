@@ -19,7 +19,4 @@ public class EnrollmentRequestDTO {
     @NotNull
     private Long courseId;
 
-    @NotNull
-    @Positive
-    private BigDecimal totalAmount;
 }
